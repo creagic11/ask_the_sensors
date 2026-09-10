@@ -1,0 +1,21 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Data & Large Files (Rule: Do not commit raw dataset)
+data/raw/
+*.zip
+*.gz
+*.tar
+
+# Environments & IDEs
+.venv/
+venv/
+env/
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
