@@ -5,6 +5,8 @@ __pycache__/
 
 # Data & Large Files (Rule: Do not commit raw dataset)
 data/raw/
+data/extrasensory/
+data/*.csv
 *.zip
 *.gz
 *.tar
