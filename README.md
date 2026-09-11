@@ -15,7 +15,7 @@
 4. **Task 4: Open-World Semantic Reasoning** (Semantic reasoning over unlabeled or out-of-distribution motion behaviors such as wheeled locomotion/cycling or sustained recumbency).
 
 ### ⚡ Neuromorphic Spiking Neural Network (SNN) Innovation
-To address resource constraints on wearable edge devices, this project introduces a **Delta-Encoded Leaky Integrate-and-Fire (LIF) Spiking Neural Network**. During sedentary behaviors (sitting, lying down), motion derivatives remain quiescent, causing spike rates to plummet by up to **88%** and reducing dynamic energy consumption from dense floating-point Multiply-Accumulates ($E_{\text{MAC}} \approx 4.6\,\text{pJ}$) to sparse synaptic additions ($E_{\text{AC}} \approx 0.1\,\text{pJ}$). We demonstrate a clear **Accuracy vs. Overhead Pareto Frontier** comparing FP32 1D-CNN, INT8 Quantized CNN, and the neuromorphic SNN.
+To address resource constraints on wearable edge devices, this project introduces a **Delta-Encoded Leaky Integrate-and-Fire (LIF) Spiking Neural Network**. During sedentary behaviors (sitting, lying down), motion derivatives remain quiescent, causing spike rates to plummet by up to **88%** and reducing dynamic energy consumption from dense floating-point Multiply-Accumulates ($E_{\text{MAC}} \approx 4.6\,\text{pJ}$) to sparse synaptic additions ($E_{\text{AC}} \approx 0.1\,\text{pJ}$). I demonstrate a clear **Accuracy vs. Overhead Pareto Frontier** comparing FP32 1D-CNN, INT8 Quantized CNN, and the neuromorphic SNN.
 
 ---
 
@@ -80,10 +80,13 @@ python -m data.download_sample
 
 ### 3. Run Query Answering
 ```bash
-# Query an activity over a recording:
+# Single natural-language query:
 python run_qa.py --data data/sample_recording_25hz.csv --query "How long was the user walking?"
 python run_qa.py --data data/sample_recording_25hz.csv --query "Did the user begin running at any point, and if so, when?"
 python run_qa.py --data data/sample_recording_25hz.csv --query "Was the user using a wheeled or pedal-based mode of movement?"
+
+# Batch evaluation over questions file (at evaluation time):
+python run_qa.py --data data/sample_recording_25hz.csv --questions data/sample_questions.txt
 ```
 
 ### 4. Generate the 5 Mandatory Figures
