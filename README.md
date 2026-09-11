@@ -102,6 +102,14 @@ This produces:
 
 ---
 
+## 📄 Technical Report
+The complete technical report detailing the mathematical formulation, neuromorphic SNN edge architecture, benchmark evaluations across all 4 tasks, and academic integrity disclosures is available:
+- **Compiled PDF Report:** [`report/ANUBHAV_23EE10091.pdf`](report/ANUBHAV_23EE10091.pdf)
+- **LaTeX Source:** [`report/CS60055_Report.tex`](report/CS60055_Report.tex)
+- **Markdown Report:** [`report/CS60055_Report.md`](report/CS60055_Report.md)
+
+---
+
 ## 👥 Teaching Team Access & Collaboration
 Teaching team members with access:
 - `sandipc-iitkgp`
