@@ -1,0 +1,7 @@
+What activity is the user performing?
+Is the user running?
+How long was the user walking?
+Did the user spend more time walking or running?
+Did the user begin running at any point, and if so, when?
+Did the user lie down for a prolonged period?
+Was the user using a wheeled or pedal-based mode of movement?

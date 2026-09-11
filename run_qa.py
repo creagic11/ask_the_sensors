@@ -26,7 +26,8 @@ from src.snn_model import SpikingHARNetwork
 def main():
     parser = argparse.ArgumentParser(description="Ask the Sensors: Grounded Activity QA Engine")
     parser.add_argument("--data", type=str, required=True, help="Path to input sensor recording (CSV)")
-    parser.add_argument("--query", type=str, required=True, help="Natural language activity query")
+    parser.add_argument("--query", type=str, default=None, help="Single natural language activity query")
+    parser.add_argument("--questions", type=str, default=None, help="Path to text file containing queries (one per line)")
     parser.add_argument("--backbone", type=str, default="cnn", choices=["cnn", "snn", "quantized"], help="Classifier backbone")
     args = parser.parse_args()
 
@@ -34,15 +35,24 @@ def main():
         print(f"Error: Data file {args.data} not found.")
         sys.exit(1)
 
+    queries = []
+    if args.query:
+        queries.append(args.query)
+    elif args.questions:
+        if not os.path.exists(args.questions):
+            print(f"Error: Questions file {args.questions} not found.")
+            sys.exit(1)
+        with open(args.questions, "r", encoding="utf-8") as f:
+            queries = [line.strip() for line in f if line.strip() and not line.startswith("#")]
+    else:
+        print("Error: Please provide either --query '...' or --questions <path_to_file>")
+        sys.exit(1)
+
     df_raw = pd.read_csv(args.data)
     df_clean = clean_and_resample_stream(df_raw, target_hz=25.0)
 
-    # 1. Check if query is an Open-World (Task 4) query
+    # Pre-initialize open-world reasoner
     open_world_reasoner = OpenWorldKinematicReasoner(df_clean, fs_hz=25.0)
-    if open_world_reasoner.can_handle(args.query):
-        response = open_world_reasoner.reason_query(args.query)
-        print(response)
-        return
 
     # 2. Otherwise, run through sliding windows & activity timeline (Tasks 1, 2, 3)
     X, y_gt, t_starts, t_ends = extract_sliding_windows(df_clean, window_sec=2.56, overlap_ratio=0.5)
@@ -79,8 +89,15 @@ def main():
     )
 
     qa_engine = GroundedQAEngine(timeline)
-    response = qa_engine.answer_query(args.query)
-    print(response)
+
+    for i, q in enumerate(queries):
+        if len(queries) > 1:
+            print(f"\n--- [Query {i+1}]: \"{q}\" ---")
+        if open_world_reasoner.can_handle(q):
+            response = open_world_reasoner.reason_query(q)
+        else:
+            response = qa_engine.answer_query(q)
+        print(response)
 
 if __name__ == "__main__":
     main()
