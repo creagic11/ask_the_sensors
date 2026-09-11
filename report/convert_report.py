@@ -27,6 +27,8 @@ def generate_latex():
 \usepackage{cite}
 \usepackage{caption}
 \usepackage{xcolor}
+\usepackage{float}
+\usepackage{placeins}
 
 \hypersetup{
     colorlinks=true,
@@ -180,9 +182,9 @@ For activities outside the 7 supervised labels:
 \subsection{Accuracy Across Question Types (Figure 1)}
 Overall performance was evaluated over a diverse test bank of 500 questions covering all four tiers.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
-\includegraphics[width=0.85\linewidth]{figures/fig1_accuracy_by_question_type.png}
+\includegraphics[width=0.75\linewidth]{figures/fig1_accuracy_by_question_type.png}
 \caption{\textbf{Figure 1:} Grounded QA Accuracy across all seven question categories and overall macro-average on the ExtraSensory evaluation suite.}
 \end{figure}
 
@@ -192,9 +194,9 @@ Identification (93.4\%), Verification (94.8\%), Duration (91.2\% within $\pm 10\
 \subsection{7-Class Activity Recognition Confusion Matrix (Figure 2)}
 Figure 2 displays the confusion matrix across all 7 target classes evaluated on windowed sensor streams.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
-\includegraphics[width=0.75\linewidth]{figures/fig2_activity_confusion_matrix.png}
+\includegraphics[width=0.62\linewidth]{figures/fig2_activity_confusion_matrix.png}
 \caption{\textbf{Figure 2:} Normalized confusion matrix for the 7-class activity recognition backbone (Macro-F1 = 92.1\%).}
 \end{figure}
 
@@ -203,9 +205,9 @@ Macro-metrics reach \textbf{92.4\% Precision}, \textbf{91.8\% Recall}, and \text
 \subsection{Accuracy vs Strictness Curve (Figure 3)}
 The Intersection-over-Union (IoU) acceptance curve traces grounding robustness across thresholds from 0.1 to 0.9.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
-\includegraphics[width=0.8\linewidth]{figures/fig3_accuracy_vs_strictness.png}
+\includegraphics[width=0.72\linewidth]{figures/fig3_accuracy_vs_strictness.png}
 \caption{\textbf{Figure 3:} Temporal answer and cited grounding interval acceptance as a function of IoU threshold strictness.}
 \end{figure}
 
@@ -214,13 +216,13 @@ At $\text{IoU} = 0.5$, my grounding module accepts \textbf{86.0\%} of cited inte
 \subsection{Accuracy vs Overhead: Pareto Frontier (Figure 4)}
 To demonstrate edge deployment viability (Extra Credit), I benchmarked four operating configurations on single-query inference:
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
-\includegraphics[width=0.85\linewidth]{figures/fig4_accuracy_vs_overhead.png}
+\includegraphics[width=0.75\linewidth]{figures/fig4_accuracy_vs_overhead.png}
 \caption{\textbf{Figure 4:} Accuracy versus resource overhead Pareto frontier, demonstrating the ultra-low power dominance of the Neuromorphic LIF SNN.}
 \end{figure}
 
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
 \caption{\textbf{Edge Inference Benchmarking on Standard Mobile CPU Target}}
 \begin{tabular}{lcccccc}
@@ -238,9 +240,9 @@ INT8 Quantized 1D-CNN & 0.23 MB & 1.8 ms & 9.4 MB & 4.9 $\mu$J & \textbf{91.5\%}
 \subsection{Robustness Under Sensor Degradation (Figure 5)}
 Figure 5 evaluates system resilience when sensor packets are randomly dropped (0\% to 50\% packet loss).
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
-\includegraphics[width=0.8\linewidth]{figures/fig5_robustness_curve.png}
+\includegraphics[width=0.72\linewidth]{figures/fig5_robustness_curve.png}
 \caption{\textbf{Figure 5:} System robustness comparing Butterworth + piecewise linear interpolation against un-interpolated zero-fill under sensor packet loss.}
 \end{figure}
 
@@ -366,13 +368,25 @@ th {{
 tr:nth-child(even) {{
     background-color: #f8fafc;
 }}
+p:has(img) {{
+    text-align: center;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin: 16px auto;
+}}
 img {{
-    max-width: 90%;
+    max-width: 76%;
     height: auto;
     display: block;
-    margin: 14px auto;
+    margin: 10px auto;
     border: 1px solid #e2e8f0;
     border-radius: 4px;
+    page-break-inside: avoid;
+    break-inside: avoid;
+}}
+h2, h3 {{
+    page-break-after: avoid;
+    break-after: avoid;
 }}
 pre {{
     background-color: #f8fafc;

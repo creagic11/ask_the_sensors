@@ -64,13 +64,25 @@ th {
 tr:nth-child(even) {
     background-color: #f8fafc;
 }
+p:has(img) {
+    text-align: center;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin: 16px auto;
+}
 img {
-    max-width: 90%;
+    max-width: 76%;
     height: auto;
     display: block;
-    margin: 14px auto;
+    margin: 10px auto;
     border: 1px solid #e2e8f0;
     border-radius: 4px;
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+h2, h3 {
+    page-break-after: avoid;
+    break-after: avoid;
 }
 pre {
     background-color: #f8fafc;
