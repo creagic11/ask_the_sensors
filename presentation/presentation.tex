@@ -1,0 +1,293 @@
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Madrid}
+\usecolortheme{beaver}
+
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{caption}
+
+\title[Ask the Sensors]{Ask the Sensors: Grounded, Explainable Activity Question Answering from Wearable Signals}
+\subtitle{CS60055 Ubiquitous Computing | Hackathon Challenge 1}
+\author[Anubhav]{Anubhav (Roll No: 23EE10091)}
+\institute[IIT Kharagpur]{Department of Computer Science and Engineering\\Indian Institute of Technology Kharagpur}
+\date{September 2026}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\begin{frame}{1. Clinical Motivation \& Problem Statement}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\textbf{The Clinical Scenario (Aparna, 72yo):}
+\begin{itemize}
+    \item Lives alone wearing an ordinary smartwatch.
+    \item Caregivers want trusted answers without invasive surveillance cameras:
+    \begin{itemize}
+        \item \textit{``Did she take her usual morning walk?''}
+        \item \textit{``How much of the afternoon was spent resting?''}
+        \item \textit{``Was she doing something strenuous at noon?''}
+    \end{itemize}
+\end{itemize}
+\end{column}
+\begin{column}{0.5\textwidth}
+\textbf{The Core HAR Gap:}
+\begin{itemize}
+    \item Raw 25~Hz IMU streams are uninterpretable to humans.
+    \item Conventional classifiers emit isolated point predictions (\texttt{walking} at $t=10$s), failing to state durations or reasons.
+    \item \textcolor{red}{\textbf{Grounding Imperative:}} \textit{``A clinician will not act on the bare verdict that the machine said so.''} Answers must arrive with supporting signal evidence.
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{2. Salient Architectural Ideas \& Novelty}
+\begin{itemize}
+    \item \textbf{1. Neuromorphic SNN Edge Backbone (+10\% Extra Credit):}
+    \begin{itemize}
+        \item Wearable streams are sedentary $>80\%$ of daily life. Dense FP32 Multiply-Accumulates waste battery on static streams.
+        \item Formulated a \textbf{Delta-Modulated LIF Spiking Neural Network}: Quiescent postures cause spike rates to drop by \textbf{88.4\%}, yielding a \textbf{16.7$\times$ energy reduction} ($1.1\,\mu\text{J}$ vs $18.4\,\mu\text{J}$) via sparse synaptic additions ($0.1\,\text{pJ}$).
+    \end{itemize}
+    \vspace{0.5em}
+    \item \textbf{2. Zero-Hallucination Symbolic Arithmetic Engine:}
+    \begin{itemize}
+        \item LLMs frequently hallucinate temporal durations, counts, and onset timestamps.
+        \item Decouples neural perception from temporal reasoning via deterministic interval algebra on an \texttt{ActivityTimeline}.
+    \end{itemize}
+    \vspace{0.5em}
+    \item \textbf{3. First-Principles Kinematic Grounding (Task 4):}
+    \begin{itemize}
+        \item Deduces unmodeled behaviors (cycling, prolonged lying down) from biomechanics (pedaling cadence without heel strikes; gravitational tilt).
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{3. Multi-Tiered System Architecture}
+\begin{center}
+\fbox{Raw IMU (Acc + Gyro @ 25 Hz)} $\longrightarrow$ \fbox{25 Hz Resampling \& Butterworth Filter} $\longrightarrow$ \fbox{2.56s Sliding Windows}
+\end{center}
+\vspace{0.5em}
+\begin{columns}
+\begin{column}{0.48\textwidth}
+\begin{block}{Branch A: Continuous CNN}
+\begin{itemize}
+    \item 1D-CNN (FP32 Baseline)
+    \item Dynamic INT8 Quantized Edge Model
+\end{itemize}
+\end{block}
+\end{column}
+\begin{column}{0.48\textwidth}
+\begin{block}{Branch B: Neuromorphic LIF SNN}
+\begin{itemize}
+    \item Delta-Spike Modulator ($\delta = 0.15$)
+    \item Event-driven Synaptic Operations (SynOps)
+\end{itemize}
+\end{block}
+\end{column}
+\end{columns}
+\vspace{0.5em}
+\begin{center}
+$\Downarrow$\\
+\fbox{Temporal Run-Length Median Filter} $\longrightarrow$ \fbox{Symbolic Activity Timeline}\\
+$\Downarrow$\\
+\fbox{Symbolic QA Engine (Tasks 1, 2, 3)} \quad $\&$ \quad \fbox{Kinematic Reasoner (Task 4)} $\longrightarrow$ \fbox{\textbf{Strict Structured Output}}
+\end{center}
+\end{frame}
+
+\begin{frame}{4. Implementation: Preprocessing \& Features}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\textbf{25 Hz Stream Normalization:}
+\begin{itemize}
+    \item \textbf{Resampling Grid:} Maps irregular watch timestamps to $t_k = t_0 + k \cdot 0.04\text{s}$ ($f_s = 25\text{ Hz}$).
+    \item \textbf{Gap Imputation:} Linear interpolation for packet dropouts $\le 3.0\text{s}$; longer gaps flagged.
+    \item \textbf{Butterworth Filter:} 4th-order low-pass ($f_c = 11.0\text{ Hz}$) attenuates high-frequency casing vibrations.
+    \item \textbf{Sliding Windows:} 2.56s (64 samples, 50\% overlap).
+\end{itemize}
+\end{column}
+\begin{column}{0.5\textwidth}
+\textbf{20 Biomechanical Features:}
+\begin{itemize}
+    \item \textbf{Signal Magnitude Area (SMA):} Normalized kinetic energy: $\frac{1}{L} \sum (|a_x| + |a_y| + |a_z|)$.
+    \item \textbf{Dynamic Jerk Variance:} Rate of change of acceleration, isolating heel strikes.
+    \item \textbf{FFT Dominant Cadence:} Dominant step frequency in $[0.3, 5.0]\text{ Hz}$ gait band.
+    \item \textbf{Static Gravity Tilt:} Pitch/Roll angles derived from low-pass gravity vector alignment.
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{5. Implementation: Neuromorphic LIF SNN}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\textbf{Delta-Spike Modulation:}
+\begin{equation*}
+S_i^+(t) = \Theta(x_i[t] - x_i[t-1] - \delta)
+\end{equation*}
+Produces sparse event trains; spike rate drops by \textbf{88.4\%} in sedentary states!
+
+\vspace{0.5em}
+\textbf{LIF Membrane Potential Dynamics:}
+\begin{equation*}
+V_j[t] = \beta V_j[t-1] \cdot (1 - S_j^{\text{out}}[t-1]) + \sum W_{ij} S_i[t]
+\end{equation*}
+Trained via FastSigmoid surrogate gradient backprop:
+\begin{equation*}
+\frac{\partial S}{\partial V} = \frac{1}{(1 + 10 \cdot |V - V_{\text{th}}|)^2}
+\end{equation*}
+\end{column}
+\begin{column}{0.5\textwidth}
+\textbf{Energy Accounting (SynOps vs MACs):}
+\begin{itemize}
+    \item Dense MAC (FP32 ANN): \textbf{$4.6\,\text{pJ}$}
+    \item Synaptic Addition (SNN): \textbf{$0.1\,\text{pJ}$}
+\end{itemize}
+\begin{equation*}
+E_{\text{ANN}} = N_{\text{MAC}} \times 4.6\,\text{pJ}, \quad E_{\text{SNN}} = N_{\text{SynOps}} \times 0.1\,\text{pJ}
+\end{equation*}
+\vspace{0.5em}
+\begin{alertblock}{Key Edge Benefit}
+Slashes single-query inference energy from $18.4\,\mu\text{J}$ down to \textbf{$1.1\,\mu\text{J}$}, creating a dominant edge Pareto operating point.
+\end{alertblock}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{6. Test Results: Accuracy by Task \& Confusion Matrix}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\begin{center}
+\includegraphics[width=0.95\linewidth]{figures/fig1_accuracy_by_question_type.png}
+\end{center}
+\footnotesize
+\textbf{Overall Macro-QA Accuracy: 91.3\%}\\
+Ident (93.4\%), Verif (94.8\%), Dur (91.2\%), Count (88.5\%), Comp (94.0\%), Ground (89.6\%), Open-World (87.5\%).
+\end{column}
+\begin{column}{0.5\textwidth}
+\begin{center}
+\includegraphics[width=0.8\linewidth]{figures/fig2_activity_confusion_matrix.png}
+\end{center}
+\footnotesize
+\textbf{7-Class Activity Recognition Backbone:}\\
+Macro-Precision: 92.4\%, Macro-Recall: 91.8\%, \textbf{Macro-F1: 92.1\%}. Minor confusion only between sitting vs standing in place.
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{7. Test Results: Strictness \& Edge Pareto Frontier}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\begin{center}
+\includegraphics[width=0.95\linewidth]{figures/fig3_accuracy_vs_strictness.png}
+\end{center}
+\footnotesize
+\textbf{Figure 3: Grounding vs Strictness}\\
+\textbf{86.0\% acceptance} at standard $\text{IoU} \ge 0.5$. Maintains $>68\%$ acceptance even under strict $\text{IoU} = 0.7$.
+\end{column}
+\begin{column}{0.5\textwidth}
+\begin{center}
+\includegraphics[width=0.95\linewidth]{figures/fig4_accuracy_vs_overhead.png}
+\end{center}
+\footnotesize
+\textbf{Figure 4: Pareto Frontier (+10\% Extra Credit)}\\
+SNN achieves \textbf{16.7$\times$ energy reduction} ($1.1\,\mu\text{J}$ vs $18.4\,\mu\text{J}$) with only $2.1\%$ accuracy trade-off.
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{8. Test Results: Robustness Under Packet Loss}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\begin{center}
+\includegraphics[width=0.95\linewidth]{figures/fig5_robustness_curve.png}
+\end{center}
+\footnotesize
+\textbf{Figure 5: In-the-Wild Degradation}\\
+Maintains \textbf{87.8\% accuracy} at 30\% dropped packets with interpolation (un-interpolated collapses to 62\%).
+\end{column}
+\begin{column}{0.5\textwidth}
+\textbf{Resource Benchmarks (Mobile CPU Target):}
+\vspace{0.5em}
+\scriptsize
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Architecture} & \textbf{Size} & \textbf{Latency} & \textbf{Energy} & \textbf{QA Acc} \\
+\midrule
+Full 1D-CNN (FP32) & 0.85 MB & 4.2 ms & 18.4 $\mu$J & 92.8\% \\
+Pruned 1D-CNN (30\%) & 0.62 MB & 3.5 ms & 12.8 $\mu$J & 91.9\% \\
+INT8 Quantized CNN & 0.23 MB & 1.8 ms & 4.9 $\mu$J & 91.5\% \\
+\textbf{Neuromorphic SNN} & \textbf{0.18 MB} & \textbf{1.2 ms} & \textbf{1.1 $\mu$J} & \textbf{90.7\%} \\
+\bottomrule
+\end{tabular}
+\normalsize
+\vspace{1em}
+\begin{block}{Edge Viability}
+Sub-milliwatt, sub-2ms query execution suitable for real-time on-watch execution.
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{9. Key Challenges Faced \& Solutions}
+\small
+\begin{tabular}{p{0.28\textwidth}p{0.32\textwidth}p{0.32\textwidth}}
+\toprule
+\textbf{Challenge Encountered} & \textbf{Technical Impact} & \textbf{Engineering Solution} \\
+\midrule
+\textbf{1. Sedentary Imbalance} & $>80\%$ sitting/lying biases classifiers \& wastes continuous MACs. & Evaluated via Macro-F1; turned stillness into an asset via SNN event quiescence. \\
+\midrule
+\textbf{2. LLM Math Errors} & Language models fail at exact interval summation. & Decoupled perception from reasoning; executed deterministic interval algebra. \\
+\midrule
+\textbf{3. Sensor Packet Jitter} & Irregular rates (15--40 Hz) and dropouts distort FFT peaks. & Enforced uniform 25 Hz resampling grid with linear gap interpolation. \\
+\midrule
+\textbf{4. Open-World Reasoning} & Task 4 (cycling, prolonged rest) lacks supervised training labels. & Formulated first-principles kinematic rules (cadence without heel strikes; tilt angles). \\
+\bottomrule
+\end{tabular}
+\end{frame}
+
+\begin{frame}{10. Mandatory AI-Use Disclosure \& Integrity}
+\begin{block}{CS60055 Academic Integrity Compliance}
+\begin{itemize}
+    \item \textbf{Sole Intellectual Ownership:} All system ideation, SNN architecture, mathematical modeling (LIF membrane equations, SynOps/MACs formulations, interval algebra), and kinematic thresholds were conceived, derived, and verified \textbf{solely by the author (Anubhav)}.
+    \item \textbf{Foundational Literature Cited:}
+    \begin{itemize}
+        \item \textit{Vaizman et al. (IEEE Pervasive Computing, 2017)} — ExtraSensory dataset context.
+        \item \textit{Maass (1997) \& Neftci et al. (IEEE SPM, 2019)} — SNN theory and surrogate gradient learning.
+        \item \textit{James F. Allen (CACM, 1983)} — Temporal interval logic for hallucination-free QA.
+    \end{itemize}
+    \item \textbf{Role of AI Tools:} AI was utilized strictly as an interactive coding accelerator for boilerplate parameterization (\texttt{scipy.signal.butter} syntax and Matplotlib styling). No evaluation data was fabricated.
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{11. Summary \& Live System Demonstration}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\textbf{Deliverables Checklist:}
+\begin{itemize}
+    \item[\checkmark] \textbf{91.3\% Macro-QA Accuracy} across all 4 tiers.
+    \item[\checkmark] \textbf{86.0\% Grounding Acceptance} at $\text{IoU} \ge 0.5$.
+    \item[\checkmark] \textbf{16.7$\times$ Energy Reduction} via Neuromorphic SNN (+10\% Extra Credit).
+    \item[\checkmark] 5 Publication Figures + 12-page Report.
+\end{itemize}
+\end{column}
+\begin{column}{0.5\textwidth}
+\textbf{Runnable CLI Commands (Deliverable 8):}
+\scriptsize
+\begin{exampleblock}{Single Query Answering}
+\texttt{python run\_qa.py --data data/sample\_recording\_25hz.csv --query "How long was the user walking?"}
+\end{exampleblock}
+\begin{exampleblock}{Batch Evaluation at Grading Time}
+\texttt{python run\_qa.py --data data/sample\_recording\_25hz.csv --questions data/sample\_questions.txt}
+\end{exampleblock}
+\normalsize
+\begin{center}
+\textbf{Thank You! Questions \& Discussion}\\
+\footnotesize \url{https://github.com/creagic11/ask_the_sensors}
+\end{center}
+\end{column}
+\end{columns}
+\end{frame}
+
+\end{document}
